@@ -1,27 +1,27 @@
 import { useState } from "react";
 
 /* ✅ centralised avatar generator */
-function getAvatar(name) {
-  return `https://api.dicebear.com/7.x/personas/svg?seed=${name}`;
+function getAvatar(id) {
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${id}`;
 }
 
 const initialFriends = [
   {
     id: 118836,
     name: "Clark",
-    image: getAvatar("Clark"),
+    image: getAvatar("118836"),
     balance: -67,
   },
   {
     id: 933372,
     name: "Sarah",
-    image: getAvatar("Sarah"),
+    image: getAvatar("118837"),
     balance: 20,
   },
   {
     id: 499476,
     name: "Ymag",
-    image: getAvatar("Ymag"),
+    image: getAvatar("118838"),
     balance: 0,
   },
 ];
@@ -162,14 +162,11 @@ function Button({ children, theFunction }) {
 function FormAddFriend({ onAddFriend }) {
   const [name, setName] = useState("");
   const [localImage, setLocalImage] = useState("");
-  const [imageName, setImageName] = useState("");
 
   function handleImageUpload(e) {
     const file = e.target.files[0];
 
     if (!file) return;
-
-    setImageName(file.name);
 
     const reader = new FileReader();
     reader.onload = () => setLocalImage(reader.result);

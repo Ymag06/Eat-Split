@@ -173,9 +173,6 @@ form .button {
   justify-self: end;
   width: fit-content;
 }
-.form-add-friend input[type="file"] {
-  font-size: 1.3rem;
-}
 
 form h2 {
   grid-column: 1 / -1;
