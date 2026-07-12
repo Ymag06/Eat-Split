@@ -1,27 +1,27 @@
 import { useState } from "react";
 
 /* ✅ centralised avatar generator */
-function getAvatar(id) {
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${id}`;
+function getAvatar(name) {
+  return `https://api.dicebear.com/7.x/personas/svg?seed=${name}`;
 }
 
 const initialFriends = [
   {
     id: 118836,
     name: "Clark",
-    image: getAvatar(118836),
+    image: getAvatar("Clark"),
     balance: -67,
   },
   {
     id: 933372,
     name: "Sarah",
-    image: getAvatar(933372),
+    image: getAvatar("Sarah"),
     balance: 20,
   },
   {
     id: 499476,
-    name: "Anthony",
-    image: getAvatar(499476),
+    name: "Ymag",
+    image: getAvatar("Ymag"),
     balance: 0,
   },
 ];
@@ -55,6 +55,27 @@ export default function App() {
     setSelectedFriend(null);
   }
 
+  //handle deleting friends
+  function handleDeleteFriend(fri) {
+    //ask for confirmation
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${fri.name} detail?`,
+    );
+    // if false nothing happen
+    if (!confirmDelete) return;
+
+    //if not continue the delete
+
+    setFriends((friends) => friends.filter((friend) => friend.id !== fri.id));
+
+    //remove the split bill form
+
+    if (selectedFriend?.id === fri.id) {
+      setSelectedFriend(null);
+    }
+  }
+
   return (
     <div className="app">
       <div className="sidebar">
@@ -62,6 +83,7 @@ export default function App() {
           friends={friends}
           selectedFriend={selectedFriend}
           onSelection={handleSelection}
+          onDeleteFriend={handleDeleteFriend}
         />
 
         {showAddFriend && <FormAddFriend onAddFriend={handleAddFriend} />}
@@ -81,7 +103,7 @@ export default function App() {
   );
 }
 
-function FriendsList({ friends, onSelection, selectedFriend }) {
+function FriendsList({ friends, onSelection, selectedFriend, onDeleteFriend }) {
   return (
     <ul>
       {friends.map((friend) => (
@@ -90,13 +112,14 @@ function FriendsList({ friends, onSelection, selectedFriend }) {
           friend={friend}
           onSelection={onSelection}
           selectedFriend={selectedFriend}
+          onDeleteFriend={onDeleteFriend}
         />
       ))}
     </ul>
   );
 }
 
-function Friend({ friend, onSelection, selectedFriend }) {
+function Friend({ friend, onSelection, selectedFriend, onDeleteFriend }) {
   const isSelected = selectedFriend?.id === friend.id;
 
   return (
@@ -121,6 +144,9 @@ function Friend({ friend, onSelection, selectedFriend }) {
       <button className="button" onClick={() => onSelection(friend)}>
         {isSelected ? "Close" : "Select"}
       </button>
+      <button className="delete-button" onClick={() => onDeleteFriend(friend)}>
+        ⊗
+      </button>
     </li>
   );
 }
@@ -135,7 +161,20 @@ function Button({ children, theFunction }) {
 
 function FormAddFriend({ onAddFriend }) {
   const [name, setName] = useState("");
-  const [image, setImage] = useState("");
+  const [localImage, setLocalImage] = useState("");
+  const [imageName, setImageName] = useState("");
+
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    setImageName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = () => setLocalImage(reader.result);
+    reader.readAsDataURL(file);
+  }
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -147,31 +186,39 @@ function FormAddFriend({ onAddFriend }) {
     const newFriend = {
       id,
       name,
-      image: getAvatar(id),
+      image: localImage || getAvatar(id),
       balance: 0,
     };
 
     onAddFriend(newFriend);
 
     setName("");
-    setImage("");
+    setLocalImage("");
   }
 
   return (
     <form className="form-add-friend" onSubmit={handleSubmit}>
-      <label>👥 Friend name</label>
+      <label>👥Friend name</label>
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
 
-      <label>🌇 Image URL (optional now)</label>
-      <input
-        type="text"
-        value={image}
-        onChange={(e) => setImage(e.target.value)}
-      />
+      <label htmlFor="file-upload">👆Upload image (Optional)</label>
+
+      <div className="image-preview-container">
+        <input
+          id="file-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+        />
+
+        {localImage && (
+          <img className="friend-preview" src={localImage} alt="Preview" />
+        )}
+      </div>
 
       <Button>Add</Button>
     </form>
